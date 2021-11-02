@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.project1.modules.user.UserMapper">
+    <insert id="registerAccount" parameterType="User">
+        insert into user(account, email,password, user_name,avatar,gender,sign,birthday)
+        values (#{account},#{email},#{password},#{userName},#{avatar},#{gender},#{sign},#{birthday});
+    </insert>
+
+    <update id="activateAccount">
+        update user
+        set email=#{email},is_active=1
+        where account=#{account};
+    </update>
+    <update id="updateAvatar">
+        update user
+        set avatar=#{filePath}
+        where id=#{id}
+    </update>
+
+    <update id="updateUser" parameterType="User">
+        update user
+        set account=#{account},email=#{email},user_name=#{userName},avatar=#{avatar},gender=#{gender},sign=#{sign},birthday=#{birthday}
+        where id=#{id}
+    </update>
+
+    <select id="getUserByEmail" resultType="User">
+        select * from user where email=#{email};
+    </select>
+
+    <select id="login" resultType="User">
+        select * from user where email=#{email} and password=#{password};
+    </select>
+    <select id="getUserByAccount" resultType="User">
+        select * from user where account=#{account};
+    </select>
+    <select id="findUserById" resultType="User">
+        select * from user where id=#{id};
+    </select>
+
+</mapper>
