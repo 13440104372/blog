@@ -1,58 +1,39 @@
 package com.zbw.blog.module.user;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.zbw.blog.pojo.Permission;
 import com.zbw.blog.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+/**
+ * @author 17587
+ */
 @Service("userService")
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     private UserMapper userMapper;
 
     @Override
-    public User login(String email, String password) {
-        return userMapper.login(email,password);
+    public User findUserByAccountOrEmail(String key) {
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(User::getAccount, key).or().eq(User::getEmail,key);
+        return userMapper.selectOne(userLambdaQueryWrapper);
     }
 
     @Override
-    public User getUserByEmail(String email) {
-        return userMapper.getUserByEmail(email);
+    public List<Permission> getUserPermission(Long userId) {
+        return userMapper.getUserPermissions(userId);
     }
-
-    @Override
-    public User getUserByAccount(String account) {
-        return userMapper.getUserByAccount(account);
-    }
-
-    @Override
-    public boolean registerAccount(User user) {
-        return userMapper.registerAccount(user)>0;
-    }
-
-    @Override
-    public boolean activateAccount(String account, String email) {
-        return userMapper.activateAccount(account, email)>0;
-    }
-
-    @Override
-    public User findUserById(int id) {
-        return userMapper.findUserById(id);
-    }
-
-    @Override
-    public boolean updateAvatar(String filePath, int id) {
-        return userMapper.updateAvatar(filePath,id)>0;
-    }
-
-    @Override
-    public boolean updateUser(User user) {
-        return userMapper.updateUser(user)>0;
-    }
-
 
     @Autowired
     public void setUserMapper(UserMapper userMapper) {
         this.userMapper = userMapper;
     }
+
+
 }

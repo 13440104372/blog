@@ -1,12 +1,17 @@
 package com.zbw.blog;
 
+import static com.zbw.blog.AppResponseCode.SUCCESS_CODE;
+
+/**
+ * @author 17587
+ */
 public class AppResponse <T>{
 
     private int code;
     private String message;
     private T data;
     private boolean isOK;
-    private static final int SUCCESS_CODE = 200;
+
 
     public AppResponse(int code,String message,T data){
         this.code = code;

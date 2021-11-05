@@ -1,17 +1,26 @@
 package com.zbw.blog.security;
 
+import com.zbw.blog.pojo.Permission;
 import com.zbw.blog.pojo.User;
 import lombok.Data;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
+/**
+ * 用户信息拓展类
+ *
+ * @author 17587
+ */
 @Data
 public class LoginUser implements UserDetails, CredentialsContainer {
-    private User user;
+    private final User user;
     /**
      * 登录ip
      */
@@ -20,8 +29,21 @@ public class LoginUser implements UserDetails, CredentialsContainer {
     /**
      * 登录时间
      */
-    private LocalDateTime loginTime;
+    private final LocalDateTime loginTime;
 
+    private final List<Permission> permissions;
+
+    public LoginUser(User user, List<Permission> permissions,LocalDateTime loginTime) {
+        this(user, permissions,null, loginTime);
+    }
+
+
+    public LoginUser(User user,List<Permission> permissions, String loginIp, LocalDateTime loginTime) {
+        this.user = user;
+        this.loginIp = loginIp;
+        this.loginTime = loginTime;
+        this.permissions = permissions;
+    }
 
     /**
      * 认证完成后，擦除密码
@@ -33,7 +55,9 @@ public class LoginUser implements UserDetails, CredentialsContainer {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
+        this.permissions.forEach(permission -> simpleGrantedAuthorities.add(new SimpleGrantedAuthority(permission.getName())));
+        return simpleGrantedAuthorities;
     }
 
     @Override
