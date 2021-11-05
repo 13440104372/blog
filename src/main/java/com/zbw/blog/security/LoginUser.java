@@ -20,6 +20,9 @@ import java.util.List;
  */
 @Data
 public class LoginUser implements UserDetails, CredentialsContainer {
+
+    private static final long serialVersionUID = 1L;
+
     private final User user;
     /**
      * 登录ip
@@ -31,14 +34,27 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     private final LocalDateTime loginTime;
 
+    /**
+     * 权限
+     */
     private final List<Permission> permissions;
 
-    public LoginUser(User user, List<Permission> permissions,LocalDateTime loginTime) {
-        this(user, permissions,null, loginTime);
+    /**
+     * 登录类型
+     */
+    private String loginType;
+
+    public LoginUser(User user,
+                     List<Permission> permissions,
+                     LocalDateTime loginTime) {
+        this(user, permissions, loginTime,null);
     }
 
 
-    public LoginUser(User user,List<Permission> permissions, String loginIp, LocalDateTime loginTime) {
+    public LoginUser(User user,
+                     List<Permission> permissions,
+                     LocalDateTime loginTime,
+                     String loginIp) {
         this.user = user;
         this.loginIp = loginIp;
         this.loginTime = loginTime;
@@ -56,7 +72,11 @@ public class LoginUser implements UserDetails, CredentialsContainer {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-        this.permissions.forEach(permission -> simpleGrantedAuthorities.add(new SimpleGrantedAuthority(permission.getName())));
+        this.permissions.forEach(permission -> {
+            if (permission != null) {
+                simpleGrantedAuthorities.add(new SimpleGrantedAuthority(permission.getName()));
+            }
+        });
         return simpleGrantedAuthorities;
     }
 

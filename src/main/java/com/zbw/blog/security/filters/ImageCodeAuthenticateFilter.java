@@ -2,8 +2,8 @@ package com.zbw.blog.security.filters;
 
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.zbw.blog.AppResponseCode;
+import com.zbw.blog.enums.LoginType;
 import com.zbw.blog.module.open.ImageCodeController;
-import com.zbw.blog.module.user.UserController;
 import com.zbw.blog.utils.ResponseUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -29,7 +29,9 @@ public class ImageCodeAuthenticateFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NotNull HttpServletRequest request,
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
-        if (defaultFilterProcessesUrl.equalsIgnoreCase(request.getRequestURI())
+
+        if (LoginType.Password.getType().equals(request.getParameter("loginType"))
+                && defaultFilterProcessesUrl.equalsIgnoreCase(request.getRequestURI())
                 && "post".equalsIgnoreCase(request.getMethod())) {
             HttpSession session = request.getSession();
             String code = request.getParameter("code");

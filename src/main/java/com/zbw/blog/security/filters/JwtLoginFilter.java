@@ -1,6 +1,13 @@
 package com.zbw.blog.security.filters;
 
+import com.zbw.blog.AppResponseCode;
+import com.zbw.blog.enums.LoginType;
+import com.zbw.blog.exceptions.RsaException;
+import com.zbw.blog.exceptions.UnsupportedLoginTypeException;
+import com.zbw.blog.security.EmailCodeAuthenticationToken;
+import com.zbw.blog.security.LoginUser;
 import com.zbw.blog.utils.JwtProvider;
+import com.zbw.blog.utils.RequestUtil;
 import com.zbw.blog.utils.ResponseUtil;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,13 +21,11 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import static com.zbw.blog.AppResponseCode.NEED_LOGIN;
+import static com.zbw.blog.AppResponseCode.*;
 
 /**
  * jwt登录认证过滤器
@@ -41,11 +46,27 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest httpServletRequest,
                                                 HttpServletResponse httpServletResponse) throws AuthenticationException {
-        //获取用户信息
-        String account = httpServletRequest.getParameter("account");
-        String password = httpServletRequest.getParameter("password");
-        //提交给AuthenticationProvider认证
-        return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(account, password));
+        String type = httpServletRequest.getParameter("loginType");
+        if (type == null || "".equals(type)) {
+            throw new UnsupportedLoginTypeException("登录参数loginType不能为空！");
+        }
+        if(LoginType.Password.getType().equals(type)){
+            //获取用户信息
+            String account = httpServletRequest.getParameter("account");
+            String password = httpServletRequest.getParameter("password");
+            //提交给AuthenticationProvider认证
+            return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(account, password));
+        }else if(LoginType.EmailCode.getType().equals(type)){
+            String email = httpServletRequest.getParameter("email");
+            String code = httpServletRequest.getParameter("code");
+            return getAuthenticationManager().authenticate(new EmailCodeAuthenticationToken(email, code));
+        }else {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (LoginType value : LoginType.values()) {
+                stringBuilder.append(value.getType()).append(',');
+            }
+            throw new UnsupportedLoginTypeException("登录参数loginType只支持以下值："+ stringBuilder + "错误的值："+type);
+        }
     }
 
     /**
@@ -76,6 +97,10 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
         // 将token放入响应头
         response.setHeader(jwtProvider.getHeader(), jwt);
         ResponseUtil.writeSuccess(true, response);
+        // 设置登录ip
+        if(authResult.getDetails() instanceof LoginUser){
+            ((LoginUser) authResult.getDetails()).setLoginIp(RequestUtil.getIpAddress(request));
+        }
         SecurityContextHolder.getContext().setAuthentication(authResult);
     }
 
@@ -96,6 +121,10 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
             ResponseUtil.writeError(NEED_LOGIN, "账号被锁定", response);
         } else if (e instanceof InternalAuthenticationServiceException) {
             ResponseUtil.writeError(NEED_LOGIN, "用户不存在", response);
+        } else if (e instanceof RsaException) {
+            ResponseUtil.writeError(RSA_VALIDATION, "RAS验证失败", response);
+        } else if (e instanceof UnsupportedLoginTypeException) {
+            ResponseUtil.writeError(UNSUPPORTED_LOGIN_TYPE, e.getMessage(), response);
         } else {
             ResponseUtil.writeError(NEED_LOGIN, e.getMessage(), response);
         }

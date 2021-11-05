@@ -26,4 +26,14 @@ public class AppResponseCode {
      * 验证码校验失败
      */
     public static final int VALIDATE_CODE = 1004;
+
+    /**
+     * RAS验证失败
+     */
+    public static final int RSA_VALIDATION = 1005;
+
+    /**
+     * 登录类型参数异常
+     */
+    public static final int UNSUPPORTED_LOGIN_TYPE = 1006;
 }

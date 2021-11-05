@@ -55,6 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         for (String s:excludeProcessUrls){
             if(s.equalsIgnoreCase(request.getRequestURI())){
                 doFilter = false;
+                break;
             }
         }
         if(doFilter){

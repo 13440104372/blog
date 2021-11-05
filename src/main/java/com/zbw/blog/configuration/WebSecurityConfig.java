@@ -1,7 +1,8 @@
 package com.zbw.blog.configuration;
 
 import com.zbw.blog.security.AnonymousAuthenticationEntryPoint;
-import com.zbw.blog.security.DefaultAuthenticationProvider;
+import com.zbw.blog.security.providers.EmailCodeAuthenticationProvider;
+import com.zbw.blog.security.providers.UsernamePasswordAuthenticationProvider;
 import com.zbw.blog.security.DefaultExpiredSessionStrategy;
 import com.zbw.blog.security.JwtLogoutSuccessHandler;
 import com.zbw.blog.security.filters.ImageCodeAuthenticateFilter;
@@ -39,9 +40,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private AnonymousAuthenticationEntryPoint anonymousAuthenticationEntryPoint;
 
     /**
-     * 认证提供者
+     * 用户名加密码登录认证提供者
      */
-    private DefaultAuthenticationProvider authenticationProvider;
+    private UsernamePasswordAuthenticationProvider usernamePasswordAuthenticationProvider;
+
+    /**
+     * 邮箱加验证码登录认证提供者
+     */
+    private EmailCodeAuthenticationProvider emailCodeAuthenticationProvider;
 
     /**
      * jwt退出成功处理器
@@ -56,7 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * 不走过滤器的接口
      */
-    private final String[] antMatchers = {"/open/**"};
+    private final String[] antMatchers = {"/open/**","/user/getEmailLoginCode"};
 
     /**
      * 不走jwt认证过滤器的接口
@@ -82,7 +88,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) {
-        auth.eraseCredentials(true).authenticationProvider(authenticationProvider);
+        auth
+                .eraseCredentials(true)
+                .authenticationProvider(usernamePasswordAuthenticationProvider)
+                .authenticationProvider(emailCodeAuthenticationProvider);
     }
 
     @Override
@@ -105,8 +114,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
 
                 .and()
-                .addFilterBefore(new ImageCodeAuthenticateFilter("/loginByPwd"),LogoutFilter.class)
-                .addFilterBefore(new JwtLoginFilter("/loginByPwd", authenticationManager()), LogoutFilter.class)
+                .addFilterBefore(new ImageCodeAuthenticateFilter("/userLogin"),LogoutFilter.class)
+                .addFilterBefore(new JwtLoginFilter("/userLogin", authenticationManager()), LogoutFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtExcludeUrls), LogoutFilter.class)
                 .logout()
                 .logoutUrl("/logout")
@@ -128,10 +137,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         this.anonymousAuthenticationEntryPoint = anonymousAuthenticationEntryPoint;
     }
 
-    @Autowired
-    public void setAuthenticationProvider(DefaultAuthenticationProvider authenticationProvider) {
-        this.authenticationProvider = authenticationProvider;
-    }
+
 
     @Autowired
     public void setJwtLogoutSuccessHandler(JwtLogoutSuccessHandler jwtLogoutSuccessHandler) {
@@ -141,6 +147,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public void setExpiredSessionStrategy(DefaultExpiredSessionStrategy expiredSessionStrategy) {
         this.expiredSessionStrategy = expiredSessionStrategy;
+    }
+
+    @Autowired
+    public void setUsernamePasswordAuthenticationProvider(UsernamePasswordAuthenticationProvider usernamePasswordAuthenticationProvider) {
+        this.usernamePasswordAuthenticationProvider = usernamePasswordAuthenticationProvider;
+    }
+
+    @Autowired
+    public void setEmailCodeAuthenticationProvider(EmailCodeAuthenticationProvider emailCodeAuthenticationProvider) {
+        this.emailCodeAuthenticationProvider = emailCodeAuthenticationProvider;
     }
 }
 
