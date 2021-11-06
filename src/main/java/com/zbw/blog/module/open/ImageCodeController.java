@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * 图片验证码
  * @author 17587
  */
 @RequestMapping("/open")

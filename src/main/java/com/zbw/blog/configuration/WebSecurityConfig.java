@@ -11,6 +11,7 @@ import com.zbw.blog.security.filters.JwtLoginFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,12 +63,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * 不走过滤器的接口
      */
-    private final String[] antMatchers = {"/open/**","/user/getEmailLoginCode"};
+    private final String[] antMatchers = {
+            "/open/**",
+            "/user/getEmailLoginCode",
+            "/user/register",
+            "/user/getActivateCode",
+            "/user/activate",
+    };
 
     /**
      * 不走jwt认证过滤器的接口
      */
-    private final String[] jwtExcludeUrls = {"/loginByPwd"};
+    private final String[] jwtExcludeUrls = {"/userLogin","/ftp/**"};
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -110,11 +117,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .authorizeRequests()
+                .antMatchers(jwtExcludeUrls).permitAll()
                 // 拦截所有请求
                 .anyRequest().authenticated()
 
                 .and()
-                .addFilterBefore(new ImageCodeAuthenticateFilter("/userLogin"),LogoutFilter.class)
+                .addFilterBefore(new ImageCodeAuthenticateFilter("/userLogin", HttpMethod.POST.toString()),LogoutFilter.class)
                 .addFilterBefore(new JwtLoginFilter("/userLogin", authenticationManager()), LogoutFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtExcludeUrls), LogoutFilter.class)
                 .logout()

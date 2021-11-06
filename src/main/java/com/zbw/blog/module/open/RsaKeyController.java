@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * RSA公钥
  * @author 17587
  */
 @RequestMapping("/open")
@@ -16,6 +17,10 @@ public class RsaKeyController {
 
     private RsaUtil rsaUtil;
 
+    /**
+     * 获取RSA公钥
+     * @return RSA公钥字符串
+     */
     @GetMapping("/getPublicRsaKey")
     public AppResponse<String> getPublicRsaKey(){
         return AppResponse.onSuccess(rsaUtil.getDefaultPublicKey());

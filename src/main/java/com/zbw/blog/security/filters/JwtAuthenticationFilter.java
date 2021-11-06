@@ -5,8 +5,8 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.zbw.blog.pojo.User;
 import com.zbw.blog.security.DefaultUserDetailsServiceImpl;
 import com.zbw.blog.security.LoginUser;
-import com.zbw.blog.utils.RequestUtil;
 import com.zbw.blog.utils.JwtProvider;
+import com.zbw.blog.utils.RequestUtil;
 import com.zbw.blog.utils.ResponseUtil;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.BeanFactory;
@@ -15,18 +15,17 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.zbw.blog.AppResponseCode.NEED_LOGIN;
@@ -39,21 +38,23 @@ import static com.zbw.blog.AppResponseCode.NEED_LOGIN;
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    public final String[] excludeProcessUrls;
 
-    private boolean doFilter = true;
+    private final List<RequestMatcher> requestMatchers;
 
-    public JwtAuthenticationFilter(String... excludeProcessUrls){
-        this.excludeProcessUrls = excludeProcessUrls;
+    public JwtAuthenticationFilter(@NotNull String... excludeProcessUrls){
+        requestMatchers = new ArrayList<>();
+        for (String s:excludeProcessUrls){
+            requestMatchers.add(new AntPathRequestMatcher(s));
+        }
     }
 
     @Override
     protected void doFilterInternal(@NotNull HttpServletRequest request,
                                     @NotNull HttpServletResponse response,
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
-
-        for (String s:excludeProcessUrls){
-            if(s.equalsIgnoreCase(request.getRequestURI())){
+        boolean doFilter = true;
+        for (RequestMatcher requestMatcher : requestMatchers) {
+            if(requestMatcher.matches(request)){
                 doFilter = false;
                 break;
             }
@@ -83,6 +84,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     ResponseUtil.writeError(NEED_LOGIN, "身份信息已过期或不存在，请重新登录", response);
                     return;
                 }
+                System.out.println(SecurityContextHolder.getContext().getAuthentication());
                 // 未登录
                 if (null == SecurityContextHolder.getContext().getAuthentication()) {
                     DefaultUserDetailsServiceImpl userDetailsService = factory.getBean(DefaultUserDetailsServiceImpl.class);
@@ -118,5 +120,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         // 继续执行过滤器
         filterChain.doFilter(request, response);
+
     }
 }

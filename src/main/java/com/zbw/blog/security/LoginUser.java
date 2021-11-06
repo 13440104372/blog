@@ -21,7 +21,7 @@ import java.util.List;
 @Data
 public class LoginUser implements UserDetails, CredentialsContainer {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 4L;
 
     private final User user;
     /**
@@ -95,7 +95,7 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return user.getIsAccountExpired()==0;
     }
 
     /**
@@ -106,7 +106,7 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return user.getIsLocked()==0;
     }
 
     /**
@@ -114,7 +114,7 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return user.getIsPasswordExpired()==0;
     }
 
     /**
@@ -122,6 +122,6 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     @Override
     public boolean isEnabled() {
-        return true;
+        return user.getIsEnabled()==1;
     }
 }

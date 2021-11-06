@@ -50,22 +50,27 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
         if (type == null || "".equals(type)) {
             throw new UnsupportedLoginTypeException("登录参数loginType不能为空！");
         }
-        if(LoginType.Password.getType().equals(type)){
+        // 密码登录
+        if (LoginType.Password.getType().equals(type)) {
             //获取用户信息
             String account = httpServletRequest.getParameter("account");
             String password = httpServletRequest.getParameter("password");
             //提交给AuthenticationProvider认证
             return getAuthenticationManager().authenticate(new UsernamePasswordAuthenticationToken(account, password));
-        }else if(LoginType.EmailCode.getType().equals(type)){
+        }
+        // 邮箱验证码登录
+        else if (LoginType.EmailCode.getType().equals(type)) {
             String email = httpServletRequest.getParameter("email");
             String code = httpServletRequest.getParameter("code");
             return getAuthenticationManager().authenticate(new EmailCodeAuthenticationToken(email, code));
-        }else {
+        }
+        // 登录类型不匹配
+        else {
             StringBuilder stringBuilder = new StringBuilder();
             for (LoginType value : LoginType.values()) {
                 stringBuilder.append(value.getType()).append(',');
             }
-            throw new UnsupportedLoginTypeException("登录参数loginType只支持以下值："+ stringBuilder + "错误的值："+type);
+            throw new UnsupportedLoginTypeException("登录参数loginType只支持以下值：" + stringBuilder + "错误的值：" + type);
         }
     }
 
@@ -98,7 +103,7 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
         response.setHeader(jwtProvider.getHeader(), jwt);
         ResponseUtil.writeSuccess(true, response);
         // 设置登录ip
-        if(authResult.getDetails() instanceof LoginUser){
+        if (authResult.getDetails() instanceof LoginUser) {
             ((LoginUser) authResult.getDetails()).setLoginIp(RequestUtil.getIpAddress(request));
         }
         SecurityContextHolder.getContext().setAuthentication(authResult);
@@ -122,7 +127,7 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
         } else if (e instanceof InternalAuthenticationServiceException) {
             ResponseUtil.writeError(NEED_LOGIN, "用户不存在", response);
         } else if (e instanceof RsaException) {
-            ResponseUtil.writeError(RSA_VALIDATION, "RAS验证失败", response);
+            ResponseUtil.writeError(RSA_VALIDATION, e.getMessage(), response);
         } else if (e instanceof UnsupportedLoginTypeException) {
             ResponseUtil.writeError(UNSUPPORTED_LOGIN_TYPE, e.getMessage(), response);
         } else {

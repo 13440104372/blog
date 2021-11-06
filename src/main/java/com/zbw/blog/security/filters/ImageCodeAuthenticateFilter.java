@@ -6,6 +6,9 @@ import com.zbw.blog.enums.LoginType;
 import com.zbw.blog.module.open.ImageCodeController;
 import com.zbw.blog.utils.ResponseUtil;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -16,13 +19,14 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
 /**
+ * 密码登录时验证图片验证码
  * @author 17587
  */
 public class ImageCodeAuthenticateFilter extends OncePerRequestFilter {
-    private final String defaultFilterProcessesUrl;
+    private final RequestMatcher requestMatcher;
 
-    public ImageCodeAuthenticateFilter(@NotNull String defaultFilterProcessesUrl) {
-        this.defaultFilterProcessesUrl = defaultFilterProcessesUrl;
+    public ImageCodeAuthenticateFilter(@NotNull String defaultFilterProcessesUrl, @NotNull String method) {
+        requestMatcher = new AntPathRequestMatcher(defaultFilterProcessesUrl,method);
     }
 
     @Override
@@ -31,8 +35,7 @@ public class ImageCodeAuthenticateFilter extends OncePerRequestFilter {
                                     @NotNull FilterChain filterChain) throws ServletException, IOException {
 
         if (LoginType.Password.getType().equals(request.getParameter("loginType"))
-                && defaultFilterProcessesUrl.equalsIgnoreCase(request.getRequestURI())
-                && "post".equalsIgnoreCase(request.getMethod())) {
+                && requestMatcher.matches(request)) {
             HttpSession session = request.getSession();
             String code = request.getParameter("code");
             String sessionCode = (String) session.getAttribute(ImageCodeController.SESSION_KEY_IMAGE_CODE);

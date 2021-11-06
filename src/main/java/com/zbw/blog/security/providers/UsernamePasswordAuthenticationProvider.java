@@ -16,7 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * 提供认证信息
+ * 用户密码登录认证提供者<br>
+ * 仅支持{@link UsernamePasswordAuthenticationToken}的认证信息
  * @author 17587
  */
 @Component
@@ -48,7 +49,6 @@ public class UsernamePasswordAuthenticationProvider implements AuthenticationPro
                 throw new BadCredentialsException("用户名或密码错误");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RsaException(e.getMessage());
         }
     }

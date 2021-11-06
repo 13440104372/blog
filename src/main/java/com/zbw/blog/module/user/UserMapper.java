@@ -20,4 +20,6 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 用户权限列表
      */
     List<Permission> getUserPermissions(@Param("userId") Long userId);
+
+    int registerUser(User user);
 }

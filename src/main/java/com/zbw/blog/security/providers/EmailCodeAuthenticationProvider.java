@@ -16,6 +16,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 /**
+ * 邮箱验证码登录认证提供者。<br>
+ * 仅支持{@link EmailCodeAuthenticationToken}的认证信息
  * @author 17587
  */
 @Component
