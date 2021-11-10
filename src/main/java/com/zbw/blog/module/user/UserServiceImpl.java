@@ -35,6 +35,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<Role> getUserRole(Long userId) {
+        return userMapper.getUserRole(userId);
+    }
+
+    @Override
     public boolean registerAccount(User user, Role role) {
         if (userMapper.registerUser(user) > 0) {
             return roleMapper.addUserRoleRelation(user.getId(), role.getId()) > 0;
@@ -63,7 +68,21 @@ public class UserServiceImpl implements UserService {
                 .eq(User::getAccount, account)
                 .set(User::getEmail, email)
                 .set(User::getIsEnabled, 1);
-        return userMapper.update(null,userLambdaUpdateWrapper)>0;
+        return userMapper.update(null, userLambdaUpdateWrapper) > 0;
+    }
+
+    @Override
+    public boolean updateAvatar(String path, Long userId) {
+        LambdaUpdateWrapper<User> userLambdaUpdateWrapper = Wrappers.lambdaUpdate();
+        userLambdaUpdateWrapper
+                .eq(User::getId, userId)
+                .set(User::getAvatar, path);
+        return userMapper.update(null, userLambdaUpdateWrapper) > 0;
+    }
+
+    @Override
+    public boolean updateUser(User user) {
+        return userMapper.updateUser(user) > 0;
     }
 
     @Autowired

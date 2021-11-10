@@ -2,6 +2,7 @@ package com.zbw.blog.security;
 
 import com.zbw.blog.module.user.UserService;
 import com.zbw.blog.pojo.Permission;
+import com.zbw.blog.pojo.Role;
 import com.zbw.blog.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,8 +26,9 @@ public class DefaultUserDetailsServiceImpl implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("登录用户：" + s + " 不存在");
         }
+        List<Role> roles = userService.getUserRole(user.getId());
         List<Permission> permissions = userService.getUserPermission(user.getId());
-        return new LoginUser(user,permissions, LocalDateTime.now());
+        return new LoginUser(user,roles,permissions, LocalDateTime.now());
     }
 
 

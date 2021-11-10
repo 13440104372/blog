@@ -2,7 +2,6 @@ package com.zbw.blog.utils;
 
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPReply;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +41,7 @@ public class FtpUtil {
      */
     private String basePath;
 
-    public boolean uploadFile(@NotNull String fileName, @NotNull String filePath, @NotNull InputStream input) {
+    public boolean uploadFile(String fileName, String filePath, InputStream input) {
         FTPClient client = createFtpClient();
         if(client == null){
             return false;

@@ -97,6 +97,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) {
         auth
                 .eraseCredentials(true)
+                // 设置认证信息提供者
                 .authenticationProvider(usernamePasswordAuthenticationProvider)
                 .authenticationProvider(emailCodeAuthenticationProvider);
     }

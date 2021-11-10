@@ -4,17 +4,36 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.zbw.blog.module.user.UserMapper">
 
-    <insert id="registerUser" parameterType="user" useGeneratedKeys="true">
-        insert into user(account, email, password, user_name, avatar, gender, sign,birthday)
-        VALUES (#{account},#{email},#{password},#{userName},#{avatar},#{gender},#{sign},#{birthday})
+    <insert id="registerUser" parameterType="user" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into user(account, email, password, user_name, avatar, gender, sign, birthday)
+        VALUES (#{account}, #{email}, #{password}, #{userName}, #{avatar}, #{gender}, #{sign}, #{birthday})
     </insert>
+    <update id="updateUser" parameterType="user">
+        update user
+        set email=#{email},
+            password=#{password},
+            user_name=#{userName},
+            avatar=#{avatar},
+            gender=#{gender},
+            sign=#{sign},
+            birthday=#{birthday}
+        where id = #{id}
+    </update>
 
     <select id="getUserPermissions" resultType="permission">
         select p.*
         from user u
-                 left join user_role_relation urr on u.id = urr.user_id
-                 left join role_permissions_relation rpr on urr.role_id = rpr.role_id
-                 left join permission p on rpr.authority_id = p.id
+                 inner join user_role_relation urr on u.id = urr.user_id
+                 inner join role_permissions_relation rpr on urr.role_id = rpr.role_id
+                 inner join permission p on rpr.authority_id = p.id
+        where u.id = #{userId}
+    </select>
+
+    <select id="getUserRole" resultType="role">
+        select r.*
+        from user u
+                 inner join user_role_relation urr on u.id = urr.user_id
+                 inner join role r on urr.role_id = r.id
         where u.id = #{userId}
     </select>
 </mapper>

@@ -25,7 +25,7 @@ public class JwtLogoutSuccessHandler implements LogoutSuccessHandler {
         if(authentication!=null){
             // 删除redis储存的token
             String userName = (String) authentication.getPrincipal();
-            redisTemplate.delete(userName+jwtProvider.getRedisKeySuffix());
+            redisTemplate.delete(jwtProvider.getRedisKeyPrefix()+userName);
             new SecurityContextLogoutHandler().logout(httpServletRequest,httpServletResponse,authentication);
         }
         ResponseUtil.writeSuccess(true,httpServletResponse);

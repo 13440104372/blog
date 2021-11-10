@@ -27,7 +27,7 @@ public class JwtProvider {
 
     private String author;
 
-    private String redisKeySuffix;
+    private String redisKeyPrefix;
 
     public String generateToken(String userName){
         Calendar calendar = Calendar.getInstance();
@@ -83,11 +83,11 @@ public class JwtProvider {
         this.author = author;
     }
 
-    public String getRedisKeySuffix() {
-        return redisKeySuffix;
+    public String getRedisKeyPrefix() {
+        return redisKeyPrefix;
     }
 
-    public void setRedisKeySuffix(String redisKeySuffix) {
-        this.redisKeySuffix = redisKeySuffix;
+    public void setRedisKeyPrefix(String redisKeyPrefix) {
+        this.redisKeyPrefix = redisKeyPrefix;
     }
 }

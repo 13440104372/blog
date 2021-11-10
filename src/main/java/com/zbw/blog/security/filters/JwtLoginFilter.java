@@ -1,6 +1,5 @@
 package com.zbw.blog.security.filters;
 
-import com.zbw.blog.AppResponseCode;
 import com.zbw.blog.enums.LoginType;
 import com.zbw.blog.exceptions.RsaException;
 import com.zbw.blog.exceptions.UnsupportedLoginTypeException;
@@ -87,7 +86,7 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
                 .getRequiredWebApplicationContext(request.getServletContext());
         JwtProvider jwtProvider = factory.getBean(JwtProvider.class);
         RedisTemplate<String, String> redisTemplate = factory.getBean(StringRedisTemplate.class);
-        String key = userName + jwtProvider.getRedisKeySuffix();
+        String key = jwtProvider.getRedisKeyPrefix()+userName ;
         String jwt;
         // 已有颁发过的未过期token
         if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {

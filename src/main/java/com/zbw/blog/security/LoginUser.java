@@ -1,6 +1,7 @@
 package com.zbw.blog.security;
 
 import com.zbw.blog.pojo.Permission;
+import com.zbw.blog.pojo.Role;
 import com.zbw.blog.pojo.User;
 import lombok.Data;
 import org.springframework.security.core.CredentialsContainer;
@@ -21,7 +22,7 @@ import java.util.List;
 @Data
 public class LoginUser implements UserDetails, CredentialsContainer {
 
-    private static final long serialVersionUID = 4L;
+    private static final long serialVersionUID = 6L;
 
     private final User user;
     /**
@@ -39,19 +40,23 @@ public class LoginUser implements UserDetails, CredentialsContainer {
      */
     private final List<Permission> permissions;
 
+    private final List<Role> roles;
+
     /**
      * 登录类型
      */
     private String loginType;
 
     public LoginUser(User user,
+                     List<Role> roles,
                      List<Permission> permissions,
                      LocalDateTime loginTime) {
-        this(user, permissions, loginTime,null);
+        this(user, roles, permissions,loginTime,null);
     }
 
 
     public LoginUser(User user,
+                     List<Role> roles,
                      List<Permission> permissions,
                      LocalDateTime loginTime,
                      String loginIp) {
@@ -59,6 +64,7 @@ public class LoginUser implements UserDetails, CredentialsContainer {
         this.loginIp = loginIp;
         this.loginTime = loginTime;
         this.permissions = permissions;
+        this.roles = roles;
     }
 
     /**
@@ -72,11 +78,10 @@ public class LoginUser implements UserDetails, CredentialsContainer {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> simpleGrantedAuthorities = new ArrayList<>();
-        this.permissions.forEach(permission -> {
-            if (permission != null) {
-                simpleGrantedAuthorities.add(new SimpleGrantedAuthority(permission.getName()));
-            }
-        });
+        // 权限
+        this.permissions.forEach(permission -> simpleGrantedAuthorities.add(new SimpleGrantedAuthority(permission.getName())));
+        // 角色
+        this.roles.forEach(role -> simpleGrantedAuthorities.add(new SimpleGrantedAuthority("ROLE_"+role.getName())));
         return simpleGrantedAuthorities;
     }
 

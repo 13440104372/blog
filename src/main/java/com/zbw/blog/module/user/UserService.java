@@ -27,6 +27,13 @@ public interface UserService {
     List<Permission> getUserPermission(Long userId);
 
     /**
+     * 查询用户权限
+     * @param userId 用户id
+     * @return 用户权限
+     */
+    List<Role> getUserRole(Long userId);
+
+    /**
      * 注册用户
      * @param user 用户信息
      * @return 注册成功返回true
@@ -47,5 +54,26 @@ public interface UserService {
      */
     User getUserByAccount(String account);
 
+    /**
+     * 激活(绑定邮箱)
+     * @param account 账号
+     * @param email 邮箱
+     * @return 激活成功返回true
+     */
     boolean activateAccount(String account, String email);
+
+    /**
+     * 更新头像
+     * @param path 头像地址
+     * @param userId 用户id
+     * @return 更新成功返回true
+     */
+    boolean updateAvatar(String path,Long userId);
+
+    /**
+     * 更新用户信息
+     * @param user 用户信息
+     * @return 更新成功返回ture
+     */
+    boolean updateUser(User user);
 }

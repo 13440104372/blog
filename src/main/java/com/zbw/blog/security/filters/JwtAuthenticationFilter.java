@@ -79,12 +79,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 // 验证token是否存在
                 RedisTemplate<String, String> redisTemplate = factory.getBean(StringRedisTemplate.class);
-                String redisToken = redisTemplate.boundValueOps(userName + jwtProvider.getRedisKeySuffix()).get();
+                String redisToken = redisTemplate.boundValueOps(jwtProvider.getRedisKeyPrefix()+userName).get();
                 if (!token.equals(redisToken)) {
                     ResponseUtil.writeError(NEED_LOGIN, "身份信息已过期或不存在，请重新登录", response);
                     return;
                 }
-                System.out.println(SecurityContextHolder.getContext().getAuthentication());
                 // 未登录
                 if (null == SecurityContextHolder.getContext().getAuthentication()) {
                     DefaultUserDetailsServiceImpl userDetailsService = factory.getBean(DefaultUserDetailsServiceImpl.class);

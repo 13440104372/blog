@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zbw.blog.module.essay.EssayMapper">
+
+    <resultMap id="EssayResultMap" type="essay" autoMapping="true">
+        <id column="id" property="id" javaType="java.lang.Long" jdbcType="BIGINT"/>
+        <association property="user" javaType="user" autoMapping="true" columnPrefix="u_"/>
+        <collection property="tags" javaType="java.util.List" ofType="tag" autoMapping="true" columnPrefix="t_"/>
+    </resultMap>
+
+    <insert id="addEssay" parameterType="essay" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into essay(subject, content, user_id, is_released, is_deleted)
+        VALUES (#{subject}, #{content}, #{user.id}, #{isReleased}, #{isDeleted})
+    </insert>
+
+    <insert id="addEssayTagRelation">
+        insert ignore into essay_tag_relation(essay_id, tag_id)
+        VALUES (#{essayId}, #{tagId})
+    </insert>
+
+    <update id="updateEssay" parameterType="essay">
+        update essay
+        set subject=#{subject},
+            content=#{content},
+            is_released=#{isReleased}
+        where id = #{id}
+    </update>
+    <delete id="deleteEssayTagRelation">
+        delete from essay_tag_relation where essay_id=#{essayId} and tag_id=#{tagId}
+    </delete>
+    <delete id="deleteAllEssayTagRelations">
+        delete from essay_tag_relation where essay_id=#{essayId}
+    </delete>
+
+    <select id="findReleasedEssayByUserIdWithLimit" resultMap="EssayResultMap">
+        select e.*,
+               u.id          as u_id,
+               u.create_time as u_create_time,
+               u.user_name   as u_user_name,
+               u.avatar      as u_avatar,
+               u.sign        as u_sign,
+               u.birthday    as u_birthday,
+               t.id          as t_id,
+               t.name        as t_name
+        from essay e
+                 inner join user u on e.user_id = u.id
+                 left join essay_tag_relation etr on e.id = etr.essay_id
+                 left join tag t on etr.tag_id = t.id
+        where e.user_id = #{userId}
+          and e.is_released = 1
+          and e.is_deleted = 0
+        order by e.create_time desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="getCountForReleasedEssayByUserId" resultType="java.lang.Long">
+        select COUNT(e.id)
+        from essay e
+        where e.user_id = #{userId}
+          and e.is_released = 1
+          and e.is_deleted = 0
+    </select>
+
+    <select id="findUnReleasedEssayByUserIdWithLimit" resultMap="EssayResultMap">
+        select e.*,
+               u.id          as u_id,
+               u.create_time as u_create_time,
+               u.user_name   as u_user_name,
+               u.avatar      as u_avatar,
+               u.sign        as u_sign,
+               u.birthday    as u_birthday,
+               t.id          as t_id,
+               t.name        as t_name
+        from essay e
+                 inner join user u on e.user_id = u.id
+                 left join essay_tag_relation etr on e.id = etr.essay_id
+                 left join tag t on etr.tag_id = t.id
+        where e.user_id = #{userId}
+          and e.is_released = 0
+          and e.is_deleted = 0
+        order by e.create_time desc
+        limit #{offset},#{size}
+    </select>
+    <select id="getCountForUnReleasedEssayByUserId" resultType="java.lang.Long">
+        select COUNT(e.id)
+        from essay e
+        where e.user_id = #{userId}
+          and e.is_released = 0
+          and e.is_deleted = 0
+    </select>
+
+    <select id="findEssayById" resultMap="EssayResultMap">
+        select e.*,
+               u.id          as u_id,
+               u.create_time as u_create_time,
+               u.user_name   as u_user_name,
+               u.avatar      as u_avatar,
+               u.sign        as u_sign,
+               u.birthday    as u_birthday,
+               t.id          as t_id,
+               t.name        as t_name
+        from essay e
+                 inner join user u on e.user_id = u.id
+                 left join essay_tag_relation etr on e.id = etr.essay_id
+                 left join tag t on etr.tag_id = t.id
+        where e.id = #{essayId}
+    </select>
+    <select id="findDeletedEssayByUserIdWithLimit" resultMap="EssayResultMap">
+        select e.*,
+               u.id          as u_id,
+               u.create_time as u_create_time,
+               u.user_name   as u_user_name,
+               u.avatar      as u_avatar,
+               u.sign        as u_sign,
+               u.birthday    as u_birthday,
+               t.id          as t_id,
+               t.name        as t_name
+        from essay e
+                 inner join user u on e.user_id = u.id
+                 left join essay_tag_relation etr on e.id = etr.essay_id
+                 left join tag t on etr.tag_id = t.id
+        where e.user_id = #{userId}
+          and e.is_deleted = 1
+        order by e.update_time desc
+        limit #{offset},#{size}
+    </select>
+
+    <select id="getCountForDeletedEssayByUserId" resultType="java.lang.Long">
+        select COUNT(e.id)
+        from essay e
+        where e.user_id = #{userId}
+          and e.is_deleted = 1
+    </select>
+</mapper>

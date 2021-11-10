@@ -1,6 +1,7 @@
 package com.zbw.blog.module.user;
 
 import com.zbw.blog.AppResponse;
+import com.zbw.blog.module.file.FileService;
 import com.zbw.blog.module.role.RoleService;
 import com.zbw.blog.pojo.Role;
 import com.zbw.blog.pojo.User;
@@ -17,9 +18,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
@@ -52,6 +55,8 @@ public class UserController {
     private JwtProvider jwtProvider;
 
     private BCryptPasswordEncoder passwordEncoder;
+
+    private FileService fileService;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat();
 
@@ -139,49 +144,50 @@ public class UserController {
     /**
      * 获取激活码
      * 每个ip每1分钟只能获取一次
+     *
      * @param email 邮箱
      */
     @GetMapping("/getActivateCode")
-    public AppResponse<Boolean> getActivateCode(String email,String account,HttpServletRequest request) throws Exception {
-        if(isValidEmail(email)){
+    public AppResponse<Boolean> getActivateCode(String email, String account, HttpServletRequest request) throws Exception {
+        if (isValidEmail(email)) {
             User user = userService.getUserByEmail(email);
-            if(user!=null){
-                return AppResponse.onError(-1,"该邮箱已被注册");
+            if (user != null) {
+                return AppResponse.onError(-1, "该邮箱已被注册");
             }
             user = userService.getUserByAccount(account);
-            if(user==null){
-                return AppResponse.onError(-1,"无效账号");
-            }else if(user.getIsEnabled()!=0){
-                return AppResponse.onError(-1,"该账号已被激活，请勿重复激活");
+            if (user == null) {
+                return AppResponse.onError(-1, "无效账号");
+            } else if (user.getIsEnabled() != 0) {
+                return AppResponse.onError(-1, "该账号已被激活，请勿重复激活");
             }
-        }else{
-            return AppResponse.onError(-1,"邮箱格式错误");
+        } else {
+            return AppResponse.onError(-1, "邮箱格式错误");
         }
         String ip = RequestUtil.getIpAddress(request);
         String code = CodeGenerator.getCode();
         Instant now = Instant.now();
         ValueOperations<String, String> forValue = redisTemplate.opsForValue();
         String lastTime = forValue.get(ip + "_lastActivateTime");
-        if(lastTime!=null){
+        if (lastTime != null) {
             Instant last = Instant.parse(lastTime);
-            if(Duration.between(last,now).getSeconds()<=60){
-                return AppResponse.onError(-1,"距离上次获取不足一分钟，请勿重复获取");
+            if (Duration.between(last, now).getSeconds() <= 60) {
+                return AppResponse.onError(-1, "距离上次获取不足一分钟，请勿重复获取");
             }
         }
         forValue.set(email + "_activate", code);
-        forValue.set(email + "_account",account);
-        redisTemplate.expire(email + "_activate",30,TimeUnit.MINUTES);
-        redisTemplate.expire(email + "_account",30,TimeUnit.MINUTES);
+        forValue.set(email + "_account", account);
+        redisTemplate.expire(email + "_activate", 30, TimeUnit.MINUTES);
+        redisTemplate.expire(email + "_account", 30, TimeUnit.MINUTES);
         Map<String, Object> dataMap = new HashMap<>(4);
         dataMap.put("email", email);
         dataMap.put("code", code);
         dataMap.put("createTime", sdf.format(new Date()));
-        dataMap.put("time",30);
+        dataMap.put("time", 30);
         String subject = "用户注册";
         String emailTemplate = "emailTemplateForRegister";
         //发送邮件
         mailUtil.sendTemplateMail(email, subject, emailTemplate, dataMap);
-        forValue.set(ip + "_lastActivateTime",now.toString());
+        forValue.set(ip + "_lastActivateTime", now.toString());
         return AppResponse.onSuccess(true);
     }
 
@@ -205,10 +211,10 @@ public class UserController {
         } else if (oldCode.equals(code)) {
             if (userService.activateAccount(account, email)) {
                 String token = jwtProvider.generateToken(account);
-                redisTemplate.boundValueOps(account+jwtProvider.getRedisKeySuffix()).set(token);
+                redisTemplate.boundValueOps(jwtProvider.getRedisKeyPrefix()+account ).set(token);
                 redisTemplate.delete(email + "_account");
                 redisTemplate.delete(email + "_activate");
-                response.setHeader(jwtProvider.getHeader(),token);
+                response.setHeader(jwtProvider.getHeader(), token);
                 return AppResponse.onSuccess(true);
             } else {
                 return AppResponse.onError(-1, "激活失败！");
@@ -216,6 +222,38 @@ public class UserController {
         } else {
             return AppResponse.onError(-1, "激活码错误");
         }
+    }
+
+
+    /**
+     * 更新头像
+     * @param avatarFile 头像文件
+     * @param authentication 认证信息
+     * @return 更新成功返回头像地址
+     * @throws IOException 上传文件时的异常
+     */
+    @PostMapping("/updateAvatar")
+    public AppResponse<String> updateAvatar(@RequestParam("avatar") MultipartFile avatarFile, Authentication authentication) throws IOException {
+        if (avatarFile.isEmpty()) {
+            return AppResponse.onError(-1, "文件不能为空");
+        }
+        LoginUser loginUser = (LoginUser) authentication.getDetails();
+        User user = loginUser.getUser();
+        String result = fileService.uploadFile(avatarFile, "/avatars");
+        if (result != null && !result.isEmpty()) {
+            if (userService.updateAvatar(result, user.getId())) {
+                return AppResponse.onSuccess(result);
+            }
+            else {
+                return AppResponse.onError(-1, "保存到数据库失败");
+            }
+        }
+        return AppResponse.onError(-1, "上传失败");
+    }
+
+    @PostMapping("/updateUser")
+    public AppResponse<Boolean> updateUser(@RequestBody User user) {
+        return AppResponse.onSuccess(userService.updateUser(user));
     }
 
     private boolean isValidEmail(String email) {
@@ -258,5 +296,10 @@ public class UserController {
     @Autowired
     public void setPasswordEncoder(BCryptPasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
+    }
+
+    @Autowired
+    public void setFileService(FileService fileService) {
+        this.fileService = fileService;
     }
 }
