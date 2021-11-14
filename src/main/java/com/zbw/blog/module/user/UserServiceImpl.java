@@ -85,6 +85,13 @@ public class UserServiceImpl implements UserService {
         return userMapper.updateUser(user) > 0;
     }
 
+    @Override
+    public User findUserById(Long userId) {
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = Wrappers.lambdaQuery();
+        userLambdaQueryWrapper.eq(User::getId, userId);
+        return userMapper.selectOne(userLambdaQueryWrapper);
+    }
+
     @Autowired
     public void setUserMapper(UserMapper userMapper) {
         this.userMapper = userMapper;

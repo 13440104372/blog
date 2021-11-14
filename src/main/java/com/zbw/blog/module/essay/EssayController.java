@@ -19,14 +19,14 @@ public class EssayController {
 
 
     /**
-     * 分页查找已发布的文章
+     * 用户分页查找自己的已发布的文章
      * @param page 页码
      * @param size 数据量
      * @param authentication 认证信息
      * @return 文章页
      */
-    @GetMapping("/findReleasedEssayByUserWithPage")
-    public AppResponse<IPage<Essay>> findReleasedEssayByUserWithPage(@RequestParam("page") Long page,
+    @GetMapping("/findReleasedEssayBySelfWithPage")
+    public AppResponse<IPage<Essay>> findReleasedEssayBySelfWithPage(@RequestParam("page") Long page,
                                                                      @RequestParam("size") Long size,
                                                                      Authentication authentication) {
         LoginUser loginUser = (LoginUser) authentication.getDetails();
@@ -34,14 +34,14 @@ public class EssayController {
     }
 
     /**
-     * 分页查找未发布的文章
+     * 用户分页查找自己的未发布的文章
      * @param page 页码
      * @param size 数据量
      * @param authentication 认证信息
      * @return 文章页
      */
-    @GetMapping("/findUnReleasedEssayByUserWithPage")
-    public AppResponse<IPage<Essay>> findUnReleasedEssayByUserWithPage(@RequestParam("page") Long page,
+    @GetMapping("/findUnReleasedEssayBySelfWithPage")
+    public AppResponse<IPage<Essay>> findUnReleasedEssayBySelfWithPage(@RequestParam("page") Long page,
                                                                       @RequestParam("size") Long size,
                                                                       Authentication authentication) {
         LoginUser loginUser = (LoginUser) authentication.getDetails();
@@ -49,14 +49,14 @@ public class EssayController {
     }
 
     /**
-     * 分页查找已删除的文章
+     * 用户分页查找自己的已删除的文章
      * @param page 页码
      * @param size 数据量
      * @param authentication 认证信息
      * @return 文章页
      */
-    @GetMapping("/findDeletedEssayByUserWithPage")
-    public AppResponse<IPage<Essay>> findDeletedEssayByUserWithPage(@RequestParam("page") Long page,
+    @GetMapping("/findDeletedEssayBySelfWithPage")
+    public AppResponse<IPage<Essay>> findDeletedEssayBySelfWithPage(@RequestParam("page") Long page,
                                                                        @RequestParam("size") Long size,
                                                                        Authentication authentication) {
         LoginUser loginUser = (LoginUser) authentication.getDetails();

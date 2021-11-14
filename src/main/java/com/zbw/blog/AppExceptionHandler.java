@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import static com.zbw.blog.AppResponseCode.ACCESS_DENIED;
+import static com.zbw.blog.AppResponseCode.NOT_FOUND;
 
 /**
  * 处理DispatcherServlet的异常
@@ -38,7 +39,7 @@ public class AppExceptionHandler {
             NoHandlerFoundException.class
     })
     public AppResponse<Exception> request404(){
-        return AppResponse.onError(404, "请求地址错误,未找到资源");
+        return AppResponse.onError(NOT_FOUND, "请求地址错误,未找到资源");
     }
 
     /**

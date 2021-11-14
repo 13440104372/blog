@@ -29,6 +29,13 @@ public interface EssayMapper extends BaseMapper<Essay> {
     Essay findEssayById(@Param("essayId") Long essayId);
 
     /**
+     * 通过id查找已发布的文章
+     * @param essayId 文章id
+     * @return 文章
+     */
+    Essay findReleasedEssayById(@Param("essayId") Long essayId);
+
+    /**
      * 通过用户id查找已发布的文章
      *
      * @param userId 用户id
@@ -122,6 +129,5 @@ public interface EssayMapper extends BaseMapper<Essay> {
      * @return 返回删除的条数
      */
     int deleteAllEssayTagRelations(@Param("essayId") Long essayId);
-
 
 }

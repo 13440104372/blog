@@ -65,10 +65,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     private final String[] antMatchers = {
             "/open/**",
-            "/user/getEmailLoginCode",
-            "/user/register",
-            "/user/getActivateCode",
-            "/user/activate",
     };
 
     /**

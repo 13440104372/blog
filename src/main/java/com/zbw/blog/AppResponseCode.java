@@ -9,6 +9,11 @@ public class AppResponseCode {
      * 请求成功
      */
     public static final int SUCCESS_CODE = 200;
+
+    /**
+     * 资源未找到
+     */
+    public static final int NOT_FOUND = 404;
     /**
      * 需要登录，没有token或者token验证失败都等
      */

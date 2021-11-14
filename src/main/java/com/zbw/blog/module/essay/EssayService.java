@@ -98,4 +98,6 @@ public interface EssayService {
      * @return 返回删除的条数
      */
     int deleteAllEssayTagRelations(Long essayId);
+
+    Essay findReleasedEssayById(Long essayId);
 }

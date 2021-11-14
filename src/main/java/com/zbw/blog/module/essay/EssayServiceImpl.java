@@ -112,6 +112,11 @@ public class EssayServiceImpl implements EssayService {
     }
 
     @Override
+    public Essay findReleasedEssayById(Long essayId) {
+        return essayMapper.findReleasedEssayById(essayId);
+    }
+
+    @Override
     public boolean deleteEssay(Essay essay) {
         LambdaUpdateWrapper<Essay> essayLambdaUpdateWrapper = Wrappers.lambdaUpdate();
         essayLambdaUpdateWrapper.eq(Essay::getId,essay.getId()).set(Essay::getIsDeleted,1);

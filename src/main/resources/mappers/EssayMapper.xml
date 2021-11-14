@@ -28,10 +28,15 @@
         where id = #{id}
     </update>
     <delete id="deleteEssayTagRelation">
-        delete from essay_tag_relation where essay_id=#{essayId} and tag_id=#{tagId}
+        delete
+        from essay_tag_relation
+        where essay_id = #{essayId}
+          and tag_id = #{tagId}
     </delete>
     <delete id="deleteAllEssayTagRelations">
-        delete from essay_tag_relation where essay_id=#{essayId}
+        delete
+        from essay_tag_relation
+        where essay_id = #{essayId}
     </delete>
 
     <select id="findReleasedEssayByUserIdWithLimit" resultMap="EssayResultMap">
@@ -132,5 +137,22 @@
         from essay e
         where e.user_id = #{userId}
           and e.is_deleted = 1
+    </select>
+    <select id="findReleasedEssayById" resultMap="EssayResultMap">
+        select e.*,
+               u.id          as u_id,
+               u.create_time as u_create_time,
+               u.user_name   as u_user_name,
+               u.avatar      as u_avatar,
+               u.sign        as u_sign,
+               u.birthday    as u_birthday,
+               t.id          as t_id,
+               t.name        as t_name
+        from essay e
+                 inner join user u on e.user_id = u.id
+                 left join essay_tag_relation etr on e.id = etr.essay_id
+                 left join tag t on etr.tag_id = t.id
+        where e.id = #{essayId}
+          and e.is_released = 1
     </select>
 </mapper>

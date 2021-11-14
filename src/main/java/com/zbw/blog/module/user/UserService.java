@@ -76,4 +76,6 @@ public interface UserService {
      * @return 更新成功返回ture
      */
     boolean updateUser(User user);
+
+    User findUserById(Long userId);
 }
