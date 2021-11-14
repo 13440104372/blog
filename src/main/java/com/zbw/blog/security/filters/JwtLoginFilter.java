@@ -20,8 +20,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static com.zbw.blog.AppResponseCode.*;
@@ -80,7 +82,7 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
     public void successfulAuthentication(HttpServletRequest request,
                                          HttpServletResponse response,
                                          FilterChain chain,
-                                         Authentication authResult) {
+                                         Authentication authResult) throws ServletException, IOException {
         String userName = (String) authResult.getPrincipal();
         BeanFactory factory = WebApplicationContextUtils
                 .getRequiredWebApplicationContext(request.getServletContext());
@@ -100,12 +102,12 @@ public class JwtLoginFilter extends AbstractAuthenticationProcessingFilter {
         }
         // 将token放入响应头
         response.setHeader(jwtProvider.getHeader(), jwt);
-        ResponseUtil.writeSuccess(true, response);
+        request.setAttribute(jwtProvider.getHeader(),jwt);
         // 设置登录ip
         if (authResult.getDetails() instanceof LoginUser) {
             ((LoginUser) authResult.getDetails()).setLoginIp(RequestUtil.getIpAddress(request));
         }
-        SecurityContextHolder.getContext().setAuthentication(authResult);
+        chain.doFilter(request,response);
     }
 
     /**

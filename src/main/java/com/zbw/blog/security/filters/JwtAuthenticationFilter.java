@@ -65,6 +65,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             JwtProvider jwtProvider = factory.getBean(JwtProvider.class);
             String token = request.getHeader(jwtProvider.getHeader());
             if (token == null || token.isEmpty()) {
+                token = (String) request.getAttribute(jwtProvider.getHeader());
+            }
+            if(token == null || token.isEmpty()){
                 ResponseUtil.writeError(NEED_LOGIN, "token不存在", response);
                 return;
             }
@@ -86,6 +89,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 // 未登录
                 if (null == SecurityContextHolder.getContext().getAuthentication()) {
+                    System.out.println(request.getRequestURI());
                     DefaultUserDetailsServiceImpl userDetailsService = factory.getBean(DefaultUserDetailsServiceImpl.class);
                     // 从数据库查询user
                     UserDetails userDetails = userDetailsService.loadUserByUsername(userName);

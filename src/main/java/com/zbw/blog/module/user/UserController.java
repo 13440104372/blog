@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import static com.zbw.blog.AppResponseCode.NEED_LOGIN;
+
 /**
  * 用户
  *
@@ -84,6 +86,16 @@ public class UserController {
     @PostMapping("/updateUser")
     public AppResponse<Boolean> updateUser(@RequestBody User user) {
         return AppResponse.onSuccess(userService.updateUser(user));
+    }
+
+    @PostMapping("/login")
+    public AppResponse<Boolean> login(Authentication authentication){
+        if(null != authentication.getDetails()){
+            return AppResponse.onSuccess(true);
+        }
+        else {
+            return AppResponse.onError(NEED_LOGIN,"认证失败！");
+        }
     }
 
     private boolean isValidEmail(String email) {

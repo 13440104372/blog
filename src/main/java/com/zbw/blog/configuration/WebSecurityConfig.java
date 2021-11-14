@@ -70,7 +70,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * 不走jwt认证过滤器的接口
      */
-    private final String[] jwtExcludeUrls = {"/userLogin","/ftp/**"};
+    private final String[] jwtExcludeUrls = {"/ftp/**"};
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -119,8 +119,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
 
                 .and()
-                .addFilterBefore(new ImageCodeAuthenticateFilter("/userLogin", HttpMethod.POST.toString()),LogoutFilter.class)
-                .addFilterBefore(new JwtLoginFilter("/userLogin", authenticationManager()), LogoutFilter.class)
+                .addFilterBefore(new ImageCodeAuthenticateFilter("/user/login", HttpMethod.POST.toString()),LogoutFilter.class)
+                .addFilterBefore(new JwtLoginFilter("/user/login", authenticationManager()), LogoutFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtExcludeUrls), LogoutFilter.class)
                 .logout()
                 .logoutUrl("/logout")
